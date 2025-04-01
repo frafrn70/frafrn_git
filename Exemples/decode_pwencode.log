@@ -1,0 +1,95 @@
+1                                        Le Système SAS         11:52 Friday, September 30, 2011
+
+NOTE: Copyright (c) 2002-2008 by SAS Institute Inc., Cary, NC, USA. 
+NOTE: SAS (r) Proprietary Software 9.2 (TS2M3) 
+      Licensed to Massarini Daniel-E2805, Site 70068130.
+NOTE: La session est exécutée sur la plate-forme X64_VSPRO .
+
+
+
+NOTE: L'initialisation de SAS a utilisé :
+      temps réel          0.46 secondes
+      temps UC            0.26 secondes
+      
+1          proc pwencode in=XXXXXXXXX;run;
+
+
+{sas002}9C943B503D3048154D3927A4512ADAB6
+
+NOTE: Procédure PWENCODE a utilisé (Durée totale du traitement) :
+      temps réel          0.01 secondes
+      temps UC            0.01 secondes
+      
+
+2          
+3          %macro decodeAttachement(encoded,decoded);
+4           data _null_;
+5           length bits $500 char $1 string $76;
+6           retain bits;
+7          
+8           /* char arrays used to decode from base64 */
+9           array lookup{64} $ ('A','B','C','D','E','F','G','H','I','J','K','L','M',
+10          'N','O','P','Q','R','S','T','U','V','W','X','Y','Z',
+11          'a','b','c','d','e','f','g','h','i','j','k','l','m',
+12          'n','o','p','q','r','s','t','u','v','w','x','y','z',
+13          '0','1','2','3','4','5','6','7','8','9','+','/');
+14         
+15          /* input file */
+16          infile &encoded;
+17          /* output file */
+18          file &decoded;
+19         
+20          input string;
+21          /* decode each character read from input file if it is not a EOF (13) or = (61)*/
+22           do i=1 to length(string);
+23             if  rank(substr(string,i,1)) not in (13,61) then
+24                do;
+25         	index=1;
+26         	/* find the index of character */
+27           	do while(lookup[index] ne substr(string,i,1));
+28         		index=index+1;
+29         	end;
+30         	/* decrement it as array should be 0 based */
+31         	index=index-1;
+32         	/* get binary value of index (take only 6 digits, first two are always 00)
+33         		and connect it to the previous ones */
+2                                        Le Système SAS         11:52 Friday, September 30, 2011
+
+34         	bits=compress(bits)||substr(put(index,binary8.),3);
+35                end;
+36           end;
+37         
+38          /* take only full numbers (8 characters) and write them to the
+39              output file - the rest should be used with next line */
+40          do while (length(bits) ge 8);
+41         	char=input(substr(bits,1,8),$binary8.);
+42         	put char 1.;
+43         	bits=substr(bits,9);		
+44          end;
+45         run;
+46         %mend;
+47         
+48         
+49         
+50         filename encoded 'd:\savedfile.txt';
+51         filename decoded 'd:\original.xls' recfm=N;
+52         
+53         %decodeAttachement(encoded,decoded);
+
+ERROR: Périphérique hors ligne.
+ERROR: Périphérique hors ligne.
+NOTE: Le Système SAS a interrompu le traitement de cette étape en raison d'erreurs.
+NOTE: L'étape DATA a utilisé (Durée totale du traitement) :
+      temps réel          0.03 secondes
+      temps UC            0.01 secondes
+      
+
+54         
+
+ERROR: Erreurs affichées en page 2.
+
+NOTE: SAS Institute Inc., SAS Campus Drive, Cary, NC USA 27513-2414
+NOTE: Le Système SAS a utilisé :
+      temps réel          0.52 secondes
+      temps UC            0.29 secondes
+      

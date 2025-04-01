@@ -1,0 +1,27 @@
+* je cree ma table de fichiers;
+data tmp;
+file='/tmp/toto1.txt';output;
+file='/tmp/toto2.txt';output;
+file='/tmp/toto3.txt';output;
+run;
+
+* je veux supprimer chaque fichier par un pipe;
+
+   * On assigne un programme dans la Work;
+   %let WORKPATH=%sysfunc(pathname(WORK));
+   filename _source "&WORKPATH/__source.sas";
+
+   * je genere le code que je veux executer à partir de ma table;
+   data _null_;
+      length line $1000;
+      file _source;
+	  set tmp;
+	  line='filename cmd pipe "rm '||compress(file)||'";';
+	  put line;
+	  put 'data _null_;';
+      put 'infile cmd;';
+	  put 'input ;';
+	  put 'run;';
+   run;
+
+   %include _source;
